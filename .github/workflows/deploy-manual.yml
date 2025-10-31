@@ -1,0 +1,53 @@
+name: gcmp-manual-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      imagetag:
+        description: 'Specify Docker Build number'
+        required: true
+        default: ''
+        type: string
+      dev-int:
+        type: boolean
+        description: deploy to dev internal
+        default: false
+        required: true
+      dev-ext:
+        type: boolean
+        description: deploy to dev external
+        default: false
+        required: true
+
+env:
+  IMAGE_PATH: gc-azure-api-management/gateway
+  IMAGE_TAG: v${{ github.event.inputs.imagetag }}
+
+jobs:
+  deploy-dev-int-multi:
+    if: github.event.inputs.dev-int == 'true'
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      ENVIRONMENT: dev-int
+      IMAGE_PATH: gc-azure-api-management/gateway
+      IMAGE_TAG: v${{ github.event.inputs.imagetag }}
+      RUNS_ON: mmc-ubuntu
+      CHART_VER: 1.1.28
+      REGIONS: "['nasa','emea','apac','nasa2']"
+      NETWORK: int
+    secrets: inherit
+
+  deploy-dev-ext-multi:
+    if: github.event.inputs.dev-ext == 'true'
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      ENVIRONMENT: dev-ext
+      IMAGE_PATH: gc-azure-api-management/gateway
+      IMAGE_TAG: v${{ github.event.inputs.imagetag }}
+      RUNS_ON: mmc-ubuntu
+      CHART_VER: 1.1.28
+      REGIONS: "['nasa','emea','apac','nasa2']"
+      NETWORK: int
+
+    secrets: inherit
+
