@@ -1,0 +1,49 @@
+name: container deployment
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        type: string
+        required: true
+      IMAGE_PATH:
+        type: string
+        required: true
+      IMAGE_TAG:
+        type: string
+        required: true
+      RUNS_ON:
+        required: true
+        type: string
+      CHART_VER:
+        required: true
+        type: string
+      REGIONS:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        region: ${{ fromJson(inputs.REGIONS) }}
+    environment: ${{ inputs.ENVIRONMENT }}
+    runs-on: ${{ inputs.RUNS_ON }}
+
+    steps:
+      - name: updates values file
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: ./Deployment/values.json
+        env:
+          image.repository: 'prod-images.mgti-dal-so-art.mrshmc.com/${{ inputs.IMAGE_PATH }}'
+          image.tag: ${{ inputs.IMAGE_TAG }}
+          ingress.annotations.cert-manager.io/cluster-issuer: oss2-ci-0-acme-sectigo
+          ingress.hosts.0.host: ${{ vars.HOSTNAME }}
+          ingress.tls.0.hosts: '["${{ env.HOSTNAME }}"]'
+
+
+          
+
+        
